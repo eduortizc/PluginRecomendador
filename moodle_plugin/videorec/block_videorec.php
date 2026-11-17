@@ -78,8 +78,6 @@ class block_videorec extends block_base {
 
         $viewurl = new moodle_url('/blocks/videorec/view.php', [
             'id' => $COURSE->id,
-            'tema' => $COURSE->fullname,
-            'buscar' => 1,
         ]);
 
         $description = html_writer::tag(
@@ -117,3 +115,4 @@ class block_videorec extends block_base {
         return true;
     }
 }
+

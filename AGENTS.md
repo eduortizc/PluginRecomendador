@@ -1,6 +1,16 @@
 # Instrucciones para Recomendador_ext
 
-## Estado y alcance vigente
+## Alcance vigente — 17 de noviembre de 2026
+
+El usuario autorizó integrar el motor existente como plugin Moodle mediante exec()
+de PHP a Python local. La guía actual está en docs/06_PLUGIN_MOODLE.md y el estado
+en docs/05_SEGUIMIENTO.md. La fuente del plugin es moodle_plugin/videorec/; genera
+su copia videorec/ y block_videorec.zip con scripts/package_plugin.py. No confundir
+la combinación léxica/semántica experimental con el híbrido colaborativo de E5.
+Las restricciones de E1 conservadas abajo se aplican solo a aquella etapa histórica.
+No acceder al Moodle real del usuario ni afirmar una instalación validada sin evidencia.
+
+## Estado inicial (referencia histórica de E1)
 
 El usuario desarrolla una tesis sobre recomendación de videos educativos y decidió comenzar con un proyecto independiente llamado `Recomendador_ext`. Los documentos están en `docs`. En esta etapa se trabaja fuera de Moodle; su integración queda para después.
 
@@ -29,7 +39,7 @@ Antes de trabajar, leer el seguimiento y la especificación de la tarea. Las ins
 6. Explicar brevemente qué hace cada parte, realizar las comprobaciones útiles y registrar lo observado.
 7. Actualizar `docs/05_SEGUIMIENTO.md` al cerrar la tarea y detenerse al completarla.
 
-## Límites de la etapa actual
+## Límites originales de E1
 
 - No buscar instalaciones de Moodle ni exigir PHP, cursos o usuarios de Moodle.
 - No crear todavía `block_videorec`, adaptadores PHP, servidores HTTP ni una interfaz web.
@@ -47,3 +57,4 @@ No inventar referencias, resultados, usuarios, horas de servicio, pruebas o mét
 No volcar credenciales en código, mensajes, capturas o repositorios. Al incorporar datos reales, documentar su procedencia y los permisos de acceso necesarios.
 
 Responder en español, con instrucciones cortas. Al finalizar, explicar qué cambió, cómo ejecutarlo, qué se comprobó y cuál es el siguiente incremento.
+

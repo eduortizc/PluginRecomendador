@@ -1,28 +1,27 @@
 # Seguimiento de Recomendador_ext
 
-Actualizado el 9 de noviembre de 2026 – Etapa E3 completada: análisis semántico con sentence-transformers y modo híbrido.
+Actualizado el 17 de noviembre de 2026 — Integración Moodle por exec(), v0.3.0.
 
-## Estado confirmado
+## Estado confirmado en esta revisión
 
 | Elemento | Estado | Evidencia |
 | --- | --- | --- |
-| Documentos académicos revisados | Completado | Contexto de la tesis resumido en docs. |
-| Equipo Mac | Confirmado | Declaración del usuario (local con Laravel Herd). |
-| Versión de Moodle | 5.1.3+ | Confirmado por el usuario. |
-| Versión de PHP | PHP 8.4 (Herd) | Confirmado por el usuario (CLI local: PHP 8.5/8.4). |
-| Tipo de plugin seleccionado | Bloque (`block_videorec`) | Decisión de diseño: widget en curso y pantalla dedicada. |
-| Código PHP del plugin | Actualizado v0.2.0 | `moodle_plugin/videorec/` con conector a Python, búsqueda interactiva y reproductor. |
-| Paquete ZIP instalable | Regenerado v0.2.0 | `block_videorec.zip` en la raíz (16 archivos, versión `2026110901`). |
-| Validación de sintaxis PHP | Completada | `php -l` sin errores en todos los 9 archivos PHP. |
-| Pruebas Python E1 (simuladas) | Vigentes | 23 pruebas unitarias pasando. |
-| Etapa E2 (YouTube Data API) | Completada | Módulo `recomendador/youtube.py`, 12 pruebas unitarias de API. |
-| Visualizador HTML y servidor web | Completados | `recomendador/visualizador.py`, `recomendador/servidor.py`, `recomendaciones.html`. |
-| Etapa E3 (análisis semántico) | Completada | Módulo `recomendador/semantico.py` con sentence-transformers, 22 pruebas unitarias (57 totales OK). |
-| Modelos colaborativos e interacciones | Pendientes | Previstos para etapas E4 y E5. |
+| Motor existente | Conservado | Ranking textual/semántico y cliente de YouTube del repositorio. |
+| Datos de YouTube | Vistas, likes y duración conservados hasta la salida | Se corrigió la pérdida de estos campos en ranking.py, incluidos ceros y valores no disponibles. |
+| Plugin Moodle | v0.3.0 listo para instalar | Fuente en moodle_plugin/videorec y ZIP con raíz videorec/. |
+| Conector | exec() de PHP a Python local | Puente moodle_bridge.py, JSON separado de avisos, errores traducidos y tiempo máximo. |
+| Configuración | Rutas configurables y Python de .venv | Sin rutas personales predeterminadas; caché HF_HOME opcional. |
+| Interfaz | YouTube real, textual o semántico | Formulario Moodle, tarjetas y reproductor; híbrido colaborativo reservado para E5. |
+| Comprobaciones | 80 pruebas satisfactorias y 11 PHP sin errores de sintaxis | Incluye exec() real con catálogo de prueba y arnés PHP independiente de Moodle. |
+| Instalación en Moodle del usuario | Pendiente | No se accedió a su servidor, sesiones, claves ni base de datos. |
+| Evaluación pedagógica y ajuste fino | Pendientes | Esta integración no demuestra eficacia educativa ni entrena el modelo. |
 
 ## Tarea activa
 
-**Etapa E3 completada.** Ranking semántico con embeddings multilingües y modo híbrido disponibles. Siguiente: E4 (perfiles de usuario e interacciones) o E5 (filtrado colaborativo y modelo híbrido completo).
+Integración solicitada por el usuario: plugin que llama las funciones Python a través
+de exec(). Se entregó el paquete v0.3.0 y la guía docs/06_PLUGIN_MOODLE.md. El siguiente
+paso es instalar y verificar una búsqueda real dentro de su curso Moodle. No se
+avanzó en filtrado colaborativo, entrenamiento ni captura de interacciones Moodle.
 
 ## Ficha técnica del proyecto
 
@@ -33,12 +32,12 @@ Actualizado el 9 de noviembre de 2026 – Etapa E3 completada: análisis semánt
 | Lenguaje | Python |
 | Versión e intérprete disponible | Python 3.14.6 (`python3`) |
 | Dependencia nueva (E3) | `sentence-transformers` (instalar con `pip install sentence-transformers`) |
-| Modelo de embeddings por defecto | `paraphrase-multilingual-MiniLM-L12-v2` (~120 MB, multilingüe) |
+| Modelo de embeddings por defecto | `paraphrase-multilingual-MiniLM-L12-v2` (pesos FP32 ~471 MB; RAM adicional) |
 | Comando textual (E1) | `python3 -m recomendador --tema "bases de datos"` |
 | Comando semántico (E3) | `python3 -m recomendador --tema "bases de datos" --metodo semantico` |
 | Comando híbrido (E3) | `python3 -m recomendador --tema "bases de datos" --metodo hibrido --alpha 0.4` |
 | Comando servidor interactivo | `python3 -m recomendador --web` |
-| Comando para pruebas | `python3 -m unittest discover tests -v` (57 tests) |
+| Comando para pruebas | `python3 -m unittest discover tests -v` (80 tests con PHP disponible) |
 | Datos utilizados | Catálogo simulado (`data/videos_demo.json`) y YouTube Data API v3 |
 | Métodos implementados | Textual (E1), Semántico con embeddings (E3), Híbrido ponderado (E3) |
 | Conexión a Moodle | Estructura base de bloque en PHP preparada en `moodle_plugin/` |
@@ -206,3 +205,21 @@ No registrar horas, métricas o pruebas que no hayan ocurrido.
 - **Resultado observado:** Moodle dispone de una pantalla funcional que llama al motor Python y presenta las recomendaciones interactivas dentro del contexto del curso.
 
 
+
+
+
+### E6 — Plugin Moodle mediante exec(), v0.3.0
+
+- **Fecha:** 17 de noviembre de 2026.
+- **Autorización:** el usuario solicitó expresamente el plugin, conservando exec() para invocar Python. Este encargo reemplaza las restricciones del arranque E1 para esta integración.
+- **Base:** commit d5398fb28461699f05ed154e3e0c74175f2f3b4b de eduortizc/PluginRecomendador.
+- **Conservado:** cliente YouTube que consulta search.list y videos.list; ranking existente y sus pruebas.
+- **Implementado:** moodle_bridge.py con subproceso limitado, stdout JSON, avisos separados, fuentes y métodos validados; conector PHP con exec(), argumentos escapados, salida y código de retorno comprobados y errores sin claves ni comandos. No se invoca el servidor web del prototipo.
+- **Interfaz:** formulario POST Moodle con sesskey y acceso al curso, tarjetas Mustache con texto escapado, identificadores YouTube validados, reproductor y vistas/likes/duración. YouTube es la fuente de la interfaz y no se ofrece el híbrido adelantado.
+- **Datos:** se conserva descripción, fecha y estadísticas en la salida del ranking; no se convierten valores ausentes en ceros ni se usan estadísticas como filtrado colaborativo.
+- **Paquete:** v0.3.0, versión Moodle 2026111700; 13 archivos con raíz videorec/, sin Python, claves ni modelos. Copia videorec sincronizada con la fuente. Script de empaquetado y comprobación reproducible incluido.
+- **Comandos comprobados:** Python 3.12, PHP CLI 8.4.27; unittest discover tests -q con PHP_BINARY: 80 pruebas OK. php -n -l: 11 archivos PHP del plugin sin errores. package_plugin.py y --check: 13 archivos verificados.
+- **Naturaleza de las pruebas:** llamadas externas/embeddings simulados y un catálogo ficticio para la prueba PHP/Python. El arnés sustituye las funciones básicas de Moodle; no equivale a una instalación Moodle.
+- **No comprobado aquí:** instalación real de Moodle, tema, permisos del usuario PHP, acceso a su caché/modelo y clave, búsquedas reales desde el plugin. La guía detalla cómo verificarlos.
+- **Límite de exec():** cada consulta inicia procesos Python y carga nuevamente el modelo desde su caché; no hay modelo residente compartido entre peticiones. Descarga y RAM deben distinguirse.
+- **Siguiente paso:** prueba local con el ZIP y una unidad de curso real; después continuar las etapas autorizadas del proyecto.

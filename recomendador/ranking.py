@@ -72,8 +72,9 @@ def _item_base(cand: dict) -> dict:
         "id": cand["id"],
         "titulo": cand["titulo"],
     }
-    for campo in ("url", "canal", "origen"):
-        if cand.get(campo):
+    for campo in ("url", "canal", "origen", "descripcion", "publicado_el",
+                  "vistas", "likes", "duracion", "duracion_segundos"):
+        if campo in cand:
             item[campo] = cand[campo]
     return item
 
@@ -237,3 +238,4 @@ def _recomendar_hibrido(
         "alpha_textual": alpha,
         "resultados": evaluados[:limite],
     }
+

@@ -1,0 +1,39 @@
+{{!
+    @template block_videorec/results
+    Escaped video metadata. IDs and outbound URLs are validated by results.php.
+    Context: hasresults, count, scorelabel, items[].
+}}
+<h3>{{#str}}results_title, block_videorec{{/str}} ({{count}})</h3>
+{{^hasresults}}
+<div class="alert alert-warning">{{#str}}no_results_found, block_videorec{{/str}}</div>
+{{/hasresults}}
+{{#hasresults}}
+<div class="row">
+    {{#items}}
+    <div class="col-12 col-md-6 col-xl-4 mb-4">
+        <article class="card h-100">
+            <img class="card-img-top" src="{{thumbnail}}" alt="" loading="lazy">
+            <div class="card-body">
+                <h4 class="h5 card-title">{{title}}</h4>
+                <p class="text-muted">{{channel}}</p>
+                <p>{{description}}</p>
+                <p><strong>{{scorelabel}}: {{score}} / 1</strong></p>
+                <dl>
+                    <dt>{{#str}}stats_views, block_videorec{{/str}}</dt><dd>{{views}}</dd>
+                    <dt>{{#str}}stats_likes, block_videorec{{/str}}</dt><dd>{{likes}}</dd>
+                    <dt>{{#str}}stats_duration, block_videorec{{/str}}</dt><dd>{{duration}}</dd>
+                </dl>
+                <a class="btn btn-outline-primary mb-2" href="{{url}}" target="_blank" rel="noopener noreferrer">{{#str}}btn_open_youtube, block_videorec{{/str}}</a>
+                <details>
+                    <summary>{{#str}}btn_play, block_videorec{{/str}}</summary>
+                    <iframe src="{{embed}}" title="{{title}}" width="360" height="203"
+                        style="max-width:100%;border:0" loading="lazy" allow="fullscreen; encrypted-media"
+                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                </details>
+            </div>
+        </article>
+    </div>
+    {{/items}}
+</div>
+<p class="text-muted">{{#str}}score_explanation, block_videorec{{/str}}</p>
+{{/hasresults}}
