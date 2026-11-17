@@ -6,8 +6,8 @@ modelo multilingüe preentrenado y calcula la similitud de coseno.
 
 Modelo por defecto: paraphrase-multilingual-MiniLM-L12-v2
   - Multilingüe (50+ idiomas, incluye español e inglés).
-  - Ligero (~120 MB en disco/RAM), rápido en CPU.
-  - Primera ejecución descarga el modelo desde HuggingFace (~30 s).
+  - Pesos FP32 de aproximadamente 471 MB; RAM y dependencias se contabilizan aparte.
+  - Primera ejecución descarga el modelo desde HuggingFace; la duración depende de la red.
 
 Cambiar el modelo
 -----------------
@@ -149,3 +149,4 @@ class ModeloEmbeddings:
         ]
         texto = " ".join(p for p in partes if p).strip()
         return texto if texto else "sin descripción"
+

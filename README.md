@@ -1,3 +1,26 @@
+# Recomendador educativo y plugin Moodle
+
+## Plugin Moodle v0.3.0 — conexión mediante exec()
+
+El bloque utiliza el motor Python de este proyecto para buscar videos reales de YouTube
+y ordenarlos mediante comparación textual o semántica. No necesita el servidor web
+del prototipo. El híbrido colaborativo permanece pendiente.
+
+- Instalable: **block_videorec.zip**, con carpeta raíz videorec/.
+- [Instalación, configuración y comprobaciones](docs/06_PLUGIN_MOODLE.md).
+- Fuente del plugin: moodle_plugin/videorec/.
+- Entrada Python ejecutada por PHP: moodle_bridge.py.
+- Pruebas: python3 -m unittest discover tests -v.
+
+Los modelos y las dependencias se instalan en el servidor Python, fuera del ZIP.
+La instalación completa en Moodle y la validación de recomendaciones con docentes
+siguen pendientes. Las 80 pruebas de código incluyen mocks y una prueba real PHP/Python
+con catálogo de prueba, sin consultar YouTube en esta revisión.
+
+---
+
+## Documentación anterior del prototipo E1/E2
+
 # Recomendador_ext – Prototipo E1 / E2
 
 Recomendador de videos educativos – etapas E1 (catálogo simulado y coincidencia textual) y E2 (recuperación de candidatos reales mediante YouTube Data API v3).
@@ -126,4 +149,5 @@ Las pruebas cubren:
 - **Credenciales**: las claves de API no se exponen en repositorios ni salidas; se leen desde el entorno local o `.env`.
 - **Método**: coincidencia textual directa. Es una línea base algorítmica; las siguientes etapas incorporarán análisis semántico y filtrado colaborativo.
 - **Siguiente etapa**: E3 incorporará análisis semántico de transcripciones o descripciones enriquecidas.
+
 

@@ -1,129 +1,102 @@
 <?php
 // This file is part of Moodle - http://moodle.org/
 //
-// Moodle is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 3 of the License, or
-// (at your option) any later version.
-//
-// Moodle is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
-
-/**
- * Connector class to communicate with the Python recommender engine.
- *
- * @package    block_videorec
- * @copyright  2026 Eduardo Ortiz
- * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
- */
-
+// @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
 namespace block_videorec;
 
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Connector service for block_videorec.
+ * Executes the local Python engine. No HTTP service is required.
+ *
+ * @package block_videorec
+ * @copyright 2026 Eduardo Ortiz
  */
 class connector {
-
-    /**
-     * Executes the Python recommender and retrieves recommendations as an array.
-     *
-     * @param string $tema Search query / course topic.
-     * @param string $fuente Source: 'simulado' or 'youtube'.
-     * @param string $metodo Method: 'textual', 'semantico', or 'hibrido'.
-     * @param int $limite Max results (1 to 5).
-     * @return array Array with status, data, and possible error details.
-     */
+    /** Return data or a translated error; never expose commands, stderr or keys. */
     public static function get_recommendations(
-        string $tema,
-        string $fuente = 'simulado',
-        string $metodo = 'textual',
-        int $limite = 5
+        string $tema, string $fuente = 'youtube', string $metodo = 'semantico', int $limite = 5
     ): array {
-        $tema = trim($tema);
-        if ($tema === '') {
-            return [
-                'success' => false,
-                'error' => get_string('error_empty_topic', 'block_videorec'),
-                'data' => null,
-            ];
+        if (trim($tema) === '') {
+            return self::failure('error_empty_topic');
         }
-
-        $fuente = ($fuente === 'youtube') ? 'youtube' : 'simulado';
-        if (!in_array($metodo, ['textual', 'semantico', 'hibrido'], true)) {
-            $metodo = 'textual';
+        if (!in_array($fuente, ['youtube', 'simulado'], true) ||
+                !in_array($metodo, ['textual', 'semantico'], true)) {
+            return self::failure('error_invalid_input');
         }
-        $limite = max(1, min(5, $limite));
-
-        // Retrieve settings or sensible defaults.
-        $pythonpath = get_config('block_videorec', 'pythonpath');
-        if (empty($pythonpath)) {
-            $pythonpath = 'python3';
+        if (!function_exists('exec')) {
+            return self::failure('error_exec_disabled');
         }
-
-        $recommenderpath = get_config('block_videorec', 'recommenderpath');
-        if (empty($recommenderpath)) {
-            $recommenderpath = '/Users/eduardoortiz/Develops/Recomendador_Ext';
+        $project = trim((string)get_config('block_videorec', 'recommenderpath'));
+        if ($project === '' || $project[0] !== '/' || !is_dir($project)) {
+            return self::failure('error_project_path');
         }
-
-        // Build command safely using escapeshellarg and escapeshellcmd.
-        $escapeddir = escapeshellarg($recommenderpath);
-        $escapedpython = escapeshellcmd($pythonpath);
-        $escapedtema = escapeshellarg($tema);
-        $escapedfuente = escapeshellarg($fuente);
-        $escapedmetodo = escapeshellarg($metodo);
-
-        $cmd = "cd {$escapeddir} && {$escapedpython} -m recomendador " .
-               "--tema {$escapedtema} " .
-               "--fuente {$escapedfuente} " .
-               "--metodo {$escapedmetodo} " .
-               "--limite {$limite} 2>&1";
-
+        $project = realpath($project);
+        $entry = $project . '/moodle_bridge.py';
+        if (!is_readable($entry)) {
+            return self::failure('error_project_path');
+        }
+        $python = trim((string)get_config('block_videorec', 'pythonpath'));
+        if ($python === '') {
+            $python = $project . '/.venv/bin/python';
+        }
+        // Keep the venv symlink: realpath() on Python would select the base interpreter.
+        if ($python[0] !== '/' || !is_executable($python) || !is_file($python)) {
+            return self::failure('error_python_path');
+        }
+        $timeout = max(5, min(600, (int)(get_config('block_videorec', 'timeout') ?: 120)));
+        $candidates = max(1, min(50, (int)(get_config('block_videorec', 'maxcandidates') ?: 20)));
+        $args = [$python, $entry, '--tema', trim($tema), '--fuente', $fuente,
+            '--metodo', $metodo, '--limite', (string)max(1, min(5, $limite)),
+            '--max-candidatos', (string)$candidates, '--timeout', (string)$timeout];
+        $cache = trim((string)get_config('block_videorec', 'modelcache'));
+        if ($cache !== '') {
+            if ($cache[0] !== '/' || !is_dir($cache) || !is_writable($cache)) {
+                return self::failure('error_cache_path');
+            }
+            $args[] = '--cache-dir';
+            $args[] = $cache;
+        }
+        $stderr = tempnam(make_request_directory(), 'videorec-');
+        if ($stderr === false) {
+            return self::failure('error_executing_python');
+        }
+        // Every argument, including executable and paths, is quoted independently.
+        $command = implode(' ', array_map('escapeshellarg', $args)) . ' 2>' . escapeshellarg($stderr);
         $output = [];
-        $returncode = 0;
-        exec($cmd, $output, $returncode);
-
-        $rawtext = implode("\n", $output);
-
-        // Find JSON block in the output (in case stderr or warning logs appeared before).
-        $jsonstart = strpos($rawtext, '{');
-        $jsonend = strrpos($rawtext, '}');
-
-        if ($jsonstart === false || $jsonend === false || $jsonend < $jsonstart) {
-            return [
-                'success' => false,
-                'error' => get_string('error_executing_python', 'block_videorec') . ': ' . $rawtext,
-                'raw' => $rawtext,
-                'cmd' => $cmd,
-                'code' => $returncode,
-            ];
+        $code = 1;
+        try {
+            exec($command, $output, $code);
+        } catch (\Throwable $e) {
+            return self::failure('error_executing_python');
+        } finally {
+            @unlink($stderr);
         }
-
-        $jsoncontent = substr($rawtext, $jsonstart, ($jsonend - $jsonstart + 1));
-        $decoded = json_decode($jsoncontent, true);
-
-        if ($decoded === null) {
-            return [
-                'success' => false,
-                'error' => get_string('error_invalid_json', 'block_videorec'),
-                'raw' => $rawtext,
-                'cmd' => $cmd,
-                'code' => $returncode,
-            ];
+        $decoded = json_decode(implode("\n", $output), true);
+        if (!is_array($decoded)) {
+            return self::failure('error_invalid_json');
         }
+        if ($code !== 0 || isset($decoded['error'])) {
+            $errors = [
+                'dependencias' => 'error_dependencies',
+                'clave_no_encontrada' => 'error_api_key',
+                'error_lectura_env' => 'error_api_key',
+                'cuota_excedida' => 'error_quota',
+                'tiempo_agotado' => 'error_timeout',
+                'entrada_invalida' => 'error_invalid_input',
+                'motor' => 'error_model',
+            ];
+            $errorcode = is_array($decoded['error'] ?? null) ? ($decoded['error']['codigo'] ?? '') : '';
+            return self::failure($errors[$errorcode] ?? 'error_executing_python');
+        }
+        if (!isset($decoded['resultados']) || !is_array($decoded['resultados'])) {
+            return self::failure('error_invalid_json');
+        }
+        return ['success' => true, 'data' => $decoded];
+    }
 
-        return [
-            'success' => true,
-            'data' => $decoded,
-            'raw' => $rawtext,
-            'cmd' => $cmd,
-            'code' => $returncode,
-        ];
+    /** Build an error response using a language string identifier. */
+    private static function failure(string $key): array {
+        return ['success' => false, 'data' => null, 'error' => get_string($key, 'block_videorec')];
     }
 }
