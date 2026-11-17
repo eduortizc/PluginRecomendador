@@ -1,0 +1,14 @@
+
+.venv/
+venv/
+.env
+.env.*
+__pycache__/
+*.pyc
+.DS_Store
+.cache/
+models/
+modelos/
+*.safetensors
+*.onnx
+pytorch_model.bin

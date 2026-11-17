@@ -1,0 +1,126 @@
+{
+  "_nota": "Conjunto simulado de perfiles de usuario e interacciones iniciales para pruebas y experimentación de E4/E5. Ningún registro corresponde a personas o datos reales.",
+  "usuarios": [
+    {
+      "id": "usr_estudiante_01",
+      "nombre": "Estudiante Principiante",
+      "rol": "estudiante",
+      "nivel": "introductorio",
+      "disciplinas": ["bases_de_datos", "programacion"]
+    },
+    {
+      "id": "usr_estudiante_02",
+      "nombre": "Estudiante Avanzado",
+      "rol": "estudiante",
+      "nivel": "avanzado",
+      "disciplinas": ["bases_de_datos", "inteligencia_artificial"]
+    },
+    {
+      "id": "usr_estudiante_03",
+      "nombre": "Estudiante Redes",
+      "rol": "estudiante",
+      "nivel": "intermedio",
+      "disciplinas": ["redes", "sistemas_operativos"]
+    },
+    {
+      "id": "usr_docente_01",
+      "nombre": "Docente Titular BD",
+      "rol": "docente",
+      "nivel": "experto",
+      "disciplinas": ["bases_de_datos", "ingenieria_software"]
+    }
+  ],
+  "interacciones": [
+    {
+      "id": "ev_001",
+      "usuario_id": "usr_estudiante_01",
+      "video_id": "demo_001",
+      "tipo": "impresion",
+      "valor": null,
+      "contexto": {"tema": "bases de datos relacionales", "nivel": "introductorio"},
+      "timestamp": "2026-10-01T10:00:00Z"
+    },
+    {
+      "id": "ev_002",
+      "usuario_id": "usr_estudiante_01",
+      "video_id": "demo_001",
+      "tipo": "apertura",
+      "valor": 1.0,
+      "contexto": {"tema": "bases de datos relacionales", "nivel": "introductorio"},
+      "timestamp": "2026-10-01T10:01:00Z"
+    },
+    {
+      "id": "ev_003",
+      "usuario_id": "usr_estudiante_01",
+      "video_id": "demo_001",
+      "tipo": "valoracion",
+      "valor": 5.0,
+      "contexto": {"tema": "bases de datos relacionales", "nivel": "introductorio"},
+      "timestamp": "2026-10-01T10:15:00Z"
+    },
+    {
+      "id": "ev_004",
+      "usuario_id": "usr_estudiante_01",
+      "video_id": "demo_002",
+      "tipo": "valoracion",
+      "valor": 4.0,
+      "contexto": {"tema": "normalizacion", "nivel": "introductorio"},
+      "timestamp": "2026-10-01T10:30:00Z"
+    },
+    {
+      "id": "ev_005",
+      "usuario_id": "usr_estudiante_02",
+      "video_id": "demo_002",
+      "tipo": "valoracion",
+      "valor": 5.0,
+      "contexto": {"tema": "normalizacion avanzada", "nivel": "avanzado"},
+      "timestamp": "2026-10-02T11:00:00Z"
+    },
+    {
+      "id": "ev_006",
+      "usuario_id": "usr_estudiante_02",
+      "video_id": "demo_008",
+      "tipo": "valoracion",
+      "valor": 5.0,
+      "contexto": {"tema": "consultas sql", "nivel": "avanzado"},
+      "timestamp": "2026-10-02T11:20:00Z"
+    },
+    {
+      "id": "ev_007",
+      "usuario_id": "usr_estudiante_03",
+      "video_id": "demo_006",
+      "tipo": "valoracion",
+      "valor": 4.5,
+      "contexto": {"tema": "redes computadoras", "nivel": "intermedio"},
+      "timestamp": "2026-10-03T09:10:00Z"
+    },
+    {
+      "id": "ev_008",
+      "usuario_id": "usr_docente_01",
+      "video_id": "demo_001",
+      "tipo": "seleccion",
+      "valor": 1.0,
+      "contexto": {"tema": "bases de datos", "nivel": "introductorio"},
+      "timestamp": "2026-10-04T16:00:00Z"
+    },
+    {
+      "id": "ev_009",
+      "usuario_id": "usr_docente_01",
+      "video_id": "demo_001",
+      "tipo": "valoracion",
+      "valor": 5.0,
+      "contexto": {"tema": "bases de datos", "nivel": "introductorio"},
+      "timestamp": "2026-10-04T16:05:00Z"
+    },
+    {
+      "id": "ev_010",
+      "usuario_id": "usr_docente_01",
+      "video_id": "demo_008",
+      "tipo": "valoracion",
+      "valor": 4.0,
+      "contexto": {"tema": "sql avanzado", "nivel": "avanzado"},
+      "timestamp": "2026-10-04T16:15:00Z"
+    }
+  ]
+}
+

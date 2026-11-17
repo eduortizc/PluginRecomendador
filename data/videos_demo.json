@@ -1,0 +1,75 @@
+{
+  "_nota": "Catálogo de prueba con datos ficticios. Todos los registros son simulados y no corresponden a videos reales.",
+  "videos": [
+    {
+      "id": "demo_001",
+      "titulo": "Introducción a las bases de datos relacionales",
+      "descripcion": "Conceptos fundamentales de bases de datos relacionales, tablas, claves primarias y consultas básicas en SQL.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_002",
+      "titulo": "Normalización de bases de datos",
+      "descripcion": "Formas normales, dependencias funcionales y diseño de esquemas en bases de datos.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_003",
+      "titulo": "Programación orientada a objetos en Python",
+      "descripcion": "Clases, herencia, polimorfismo y encapsulamiento en el lenguaje Python.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_004",
+      "titulo": "Estructuras de datos: listas y árboles",
+      "descripcion": "Listas enlazadas, árboles binarios, recorridos y operaciones fundamentales en estructuras de datos.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_005",
+      "titulo": "Algoritmos de ordenamiento",
+      "descripcion": "Métodos de ordenamiento como burbuja, quicksort y mergesort, con análisis de complejidad.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_006",
+      "titulo": "Fundamentos de redes de computadoras",
+      "descripcion": "Modelo OSI, protocolos TCP/IP, direccionamiento y topologías de red.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_007",
+      "titulo": "Desarrollo web con HTML y CSS",
+      "descripcion": "Creación de páginas web, etiquetas HTML semánticas, hojas de estilo y diseño responsivo.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_008",
+      "titulo": "Consultas avanzadas en SQL",
+      "descripcion": "Subconsultas, joins, agrupamiento y funciones de agregación en bases de datos SQL.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_009",
+      "titulo": "Introducción a la inteligencia artificial",
+      "descripcion": "Historia, conceptos básicos, aprendizaje automático y aplicaciones de la inteligencia artificial.",
+      "origen": "simulado",
+      "url": null
+    },
+    {
+      "id": "demo_010",
+      "titulo": "Sistemas operativos: procesos e hilos",
+      "descripcion": "Gestión de procesos, planificación, hilos, concurrencia y sincronización en sistemas operativos.",
+      "origen": "simulado",
+      "url": null
+    }
+  ]
+}
