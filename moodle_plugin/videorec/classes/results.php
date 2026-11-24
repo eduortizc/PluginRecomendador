@@ -22,10 +22,13 @@ class results {
             $short = $match[0] ?? '';
             $score = is_numeric($item['puntuacion'] ?? null) ? (float)$item['puntuacion'] : 0.0;
             $items[] = [
+                'videoid' => $id,
                 'title' => (string)($item['titulo'] ?? ''),
                 'channel' => (string)($item['canal'] ?? ''),
                 'description' => $short . ($short !== $description ? '…' : ''),
                 'score' => number_format(max(0, min(1, $score)), 3, '.', ''),
+                'strategy' => get_string(($item['estrategia'] ?? '') === 'semantico_colaborativo'
+                    ? 'strategy_hybrid' : 'strategy_semantic', 'block_videorec'),
                 'thumbnail' => 'https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg',
                 'url' => 'https://www.youtube.com/watch?v=' . $id,
                 'embed' => 'https://www.youtube-nocookie.com/embed/' . $id,
@@ -36,7 +39,8 @@ class results {
         }
         return [
             'items' => $items, 'hasresults' => (bool)$items, 'count' => count($items),
-            'scorelabel' => get_string($method === 'semantico' ? 'semantic_similarity' : 'match_score', 'block_videorec'),
+            'scorelabel' => get_string($method === 'hibrido_colaborativo' ? 'hybrid_score'
+                : ($method === 'semantico' ? 'semantic_similarity' : 'match_score'), 'block_videorec'),
         ];
     }
 

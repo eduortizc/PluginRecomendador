@@ -15,13 +15,14 @@ defined('MOODLE_INTERNAL') || die();
 class connector {
     /** Return data or a translated error; never expose commands, stderr or keys. */
     public static function get_recommendations(
-        string $tema, string $fuente = 'youtube', string $metodo = 'semantico', int $limite = 5
+        string $tema, string $fuente = 'youtube', string $metodo = 'hibrido_colaborativo',
+        int $limite = 5, array $contexto = []
     ): array {
         if (trim($tema) === '') {
             return self::failure('error_empty_topic');
         }
         if (!in_array($fuente, ['youtube', 'simulado'], true) ||
-                !in_array($metodo, ['textual', 'semantico'], true)) {
+                !in_array($metodo, ['textual', 'semantico', 'hibrido_colaborativo'], true)) {
             return self::failure('error_invalid_input');
         }
         if (!function_exists('exec')) {
@@ -61,6 +62,21 @@ class connector {
         if ($stderr === false) {
             return self::failure('error_executing_python');
         }
+        $contextfile = null;
+        if ($contexto) {
+            $contextfile = tempnam(make_request_directory(), 'videorec-context-');
+            $payload = json_encode($contexto, JSON_UNESCAPED_UNICODE | JSON_INVALID_UTF8_SUBSTITUTE);
+            if ($contextfile === false || $payload === false ||
+                    file_put_contents($contextfile, $payload) === false) {
+                @unlink($stderr);
+                if ($contextfile) {
+                    @unlink($contextfile);
+                }
+                return self::failure('error_executing_python');
+            }
+            $args[] = '--contexto-json';
+            $args[] = $contextfile;
+        }
         // Every argument, including executable and paths, is quoted independently.
         $command = implode(' ', array_map('escapeshellarg', $args)) . ' 2>' . escapeshellarg($stderr);
         $output = [];
@@ -71,6 +87,9 @@ class connector {
             return self::failure('error_executing_python');
         } finally {
             @unlink($stderr);
+            if ($contextfile) {
+                @unlink($contextfile);
+            }
         }
         $decoded = json_decode(implode("\n", $output), true);
         if (!is_array($decoded)) {

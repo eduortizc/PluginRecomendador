@@ -36,7 +36,7 @@ def main():
         shutil.copytree(SOURCE, MIRROR, dirs_exist_ok=True)
         with ZipFile(OUTPUT, "w", compression=ZIP_DEFLATED) as archive:
             for path, content in archivos().items():
-                info = ZipInfo("videorec/" + path, date_time=(2026, 11, 17, 0, 0, 0))
+                info = ZipInfo("videorec/" + path, date_time=(2026, 11, 24, 0, 0, 0))
                 info.create_system = 3
                 info.external_attr = 0o100644 << 16
                 info.compress_type = ZIP_DEFLATED

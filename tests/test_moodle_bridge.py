@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import tempfile
 import unittest
 from unittest.mock import Mock, patch
 
@@ -22,6 +23,61 @@ def argumentos(**cambios):
 
 
 class TestMoodleBridge(unittest.TestCase):
+    def test_contexto_curso_alimenta_hibrido_sin_historial_local(self):
+        candidatos = [{"id": v, "titulo": "Prueba", "descripcion": "SQL", "origen": "youtube"}
+                      for v in ("AAAAAAA0001", "BBBBBBB0002", "CCCCCCC0003")]
+        contexto = {"usuario_id": "u_1", "curso_id": 42, "matriz_utilidad": {
+            "u_1": {"COMMON00001": 5, "COMMON00002": 1},
+            "u_2": {"COMMON00001": 5, "COMMON00002": 1,
+                    "AAAAAAA0001": 1, "BBBBBBB0002": 5, "CCCCCCC0003": 5}}}
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = Path(tmp) / "contexto.json"
+            ruta.write_text(json.dumps(contexto))
+            modelo = Mock(nombre_modelo="modelo_controlado")
+            modelo.puntuar.return_value = [.8, .7, .01]
+            with patch("recomendador.youtube.buscar_videos_youtube", return_value=candidatos), \
+                 patch("recomendador.semantico.ModeloEmbeddings", return_value=modelo):
+                datos, codigo = bridge.ejecutar(argumentos(
+                    metodo="hibrido_colaborativo", contexto_json=str(ruta)))
+            self.assertEqual(codigo, 0)
+            self.assertEqual(datos["resultados"][0]["id"], "BBBBBBB0002")
+            self.assertAlmostEqual(datos["resultados"][0]["puntuacion"], .79)
+            self.assertEqual(datos["contexto"], {"usuario_id": "u_1", "curso_id": 42})
+            self.assertNotIn("matriz_utilidad", json.dumps(datos))
+            self.assertEqual(len(datos["resultados"]), 2)
+            self.assertEqual(list(Path(tmp).iterdir()), [ruta])
+
+    def test_contexto_vacio_conserva_respaldo_sin_datos_demo(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = Path(tmp) / "contexto.json"
+            ruta.write_text(json.dumps({"usuario_id": "u_1", "curso_id": 42, "matriz_utilidad": {}}))
+            contexto, matriz = bridge.leer_contexto(ruta)
+            self.assertEqual(contexto["usuario_id"], "u_1")
+            self.assertEqual(matriz, {})
+        self.assertEqual(bridge.leer_contexto(""), (None, {}))
+
+    def test_contexto_invalido_no_consulta_servicios(self):
+        casos = [[], {"usuario_id": "usr_demo", "curso_id": 42, "matriz_utilidad": {}},
+                 {"usuario_id": "u_1", "curso_id": True, "matriz_utilidad": {}},
+                 {"usuario_id": "u_1", "curso_id": 42, "matriz_utilidad": []}]
+        for valor in (0, 6, float("nan"), True, "5"):
+            casos.append({"usuario_id": "u_1", "curso_id": 42,
+                          "matriz_utilidad": {"u_1": {"AAAAAAA0001": valor}}})
+        with tempfile.TemporaryDirectory() as tmp:
+            ruta = Path(tmp) / "contexto.json"
+            for caso in casos:
+                with self.subTest(caso=caso):
+                    ruta.write_text(json.dumps(caso))
+                    with patch("recomendador.youtube.buscar_videos_youtube") as buscar:
+                        datos, codigo = bridge.ejecutar(argumentos(contexto_json=str(ruta)))
+                    self.assertEqual((codigo, datos["error"]["codigo"]), (2, "entrada_invalida"))
+                    buscar.assert_not_called()
+
+    def test_contexto_no_legible_se_traduce_sin_exponer_ruta(self):
+        datos, codigo = bridge.ejecutar(argumentos(contexto_json="/ruta/privada/inexistente.json"))
+        self.assertEqual(codigo, 2)
+        self.assertNotIn("/ruta/privada", json.dumps(datos))
+
     def test_metadatos_llegan_al_resultado_incluyendo_cero(self):
         candidato = {"id": "prueba", "titulo": "Bases de datos", "descripcion": "SQL",
                      "origen": "youtube", "vistas": 0, "likes": 0,

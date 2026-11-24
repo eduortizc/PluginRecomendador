@@ -25,8 +25,8 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'block_videorec';
-$plugin->version   = 2026111700;        // YYYYMMDDXX.
+$plugin->version   = 2026112400;        // YYYYMMDDXX.
 $plugin->requires  = 2024100700;        // Moodle 4.5+ / 5.x.
 $plugin->maturity  = MATURITY_ALPHA;
-$plugin->release   = 'v0.3.0';
+$plugin->release   = 'v0.4.0';
 

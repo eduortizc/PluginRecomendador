@@ -6,8 +6,10 @@ El usuario solicitó implementar el flujo en código. E5 está incorporado al mo
 y al buscador local mediante `hibrido_colaborativo`: umbral semántico, vecinos
 de usuario con valoraciones explícitas y combinación, con respaldo por contenido.
 El enriquecimiento de metadatos queda para una etapa futura. Consultar
-docs/07_MOTOR_HIBRIDO.md y docs/05_SEGUIMIENTO.md. El plugin Moodle mantiene v0.3.0
-y todavía no ofrece E5. No usar datos simulados como historial real ni confundir
+docs/07_MOTOR_HIBRIDO.md y docs/05_SEGUIMIENTO.md. El plugin Moodle v0.4.0 conecta
+E5 por exec(), con valoraciones explícitas en la base de datos Moodle y un único
+botón Recomendar. Contexto Python temporal y aislado por curso; la identidad procede
+de la sesión. No usar datos simulados como historial real ni confundir
 el modo histórico `hibrido` textual-semántico con el nuevo método colaborativo.
 
 ## Integración previa — 17 de noviembre de 2026

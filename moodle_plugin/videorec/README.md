@@ -1,4 +1,4 @@
-# Recomendador de videos para Moodle — v0.3.0
+# Recomendador de videos para Moodle — v0.4.0
 
 Instala block_videorec.zip desde Administración del sitio > Extensiones > Instalar extensiones.
 El ZIP contiene la carpeta videorec; no subas el ZIP completo del repositorio a Moodle.
@@ -17,10 +17,18 @@ Cada consulta usa exec() y un nuevo proceso: carga el modelo desde disco, sin
 mantener abierto el explorador web del prototipo. La descarga inicial solo se
 repite cuando el modelo no está disponible en esa caché.
 
-La búsqueda usa YouTube real y permite ranking textual o semántico de título y
-descripción. Las vistas, likes y duración se muestran si la API los devuelve;
-no se usan como filtrado colaborativo ni como garantía de calidad educativa.
-No se registran perfiles, usuarios Moodle ni interacciones en esta versión.
+El botón Recomendar ejecuta análisis semántico de título y descripción, filtro
+y ranking híbrido con valoraciones de usuarios similares del mismo curso.
+Sin historial suficiente se usa contenido semántico. No hay selector de método.
+Las valoraciones se guardan en la base de datos Moodle, con la identidad de la
+sesión. Cada usuario puede actualizar su valoración de 1 a 5 por video y curso.
+Python recibe temporalmente los IDs y valoraciones del curso y no los conserva.
+Las vistas, likes y duración son informativos y no intervienen en el ranking.
+
+La actualización crea la tabla block_videorec_rating y cambia la versión a
+2026112400. El motor Python del servidor también debe actualizarse con esta rama.
+En el intérprete configurado deben estar instaladas las dependencias de
+requirements.txt (sentence-transformers) y disponible el modelo en su caché.
 
 La instalación completa y el protocolo de prueba están en docs/06_PLUGIN_MOODLE.md
 del repositorio. La compatibilidad con tu instalación y tema debe probarse allí.

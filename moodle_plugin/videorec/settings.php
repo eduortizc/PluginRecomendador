@@ -9,12 +9,6 @@ if ($ADMIN->fulltree) {
             get_string('setting_' . $name . '_desc', 'block_videorec'), '', PARAM_RAW_TRIMMED
         ));
     }
-    $settings->add(new admin_setting_configselect(
-        'block_videorec/default_method', get_string('setting_default_method', 'block_videorec'),
-        get_string('setting_default_method_desc', 'block_videorec'), 'semantico',
-        ['semantico' => get_string('method_semantico', 'block_videorec'),
-         'textual' => get_string('method_textual', 'block_videorec')]
-    ));
     foreach (['timeout' => 120, 'maxcandidates' => 20] as $name => $default) {
         $settings->add(new admin_setting_configtext(
             'block_videorec/' . $name, get_string('setting_' . $name, 'block_videorec'),

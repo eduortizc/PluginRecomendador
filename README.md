@@ -1,6 +1,17 @@
 # Recomendador educativo y plugin Moodle
 
-## Motor híbrido del prototipo — E5
+El uso principal es el bloque de Moodle. No necesitas abrir un buscador en la
+computadora para generar el instalable. Desde la rama `codex/motor-hibrido`:
+
+```bash
+git pull --ff-only origin codex/motor-hibrido
+python3 scripts/package_plugin.py
+```
+
+Sube `block_videorec.zip` a Moodle y actualiza también el proyecto Python del
+servidor. [Guía de configuración y actualización v0.4.0](docs/06_PLUGIN_MOODLE.md).
+
+## Prototipo local opcional — E5
 
 Implementado en el motor Python y el buscador local: análisis semántico → filtro
 por umbral → filtrado colaborativo por vecinos → combinación y ranking final.
@@ -19,12 +30,22 @@ se conserva la puntuación semántica. No se cargan valoraciones simuladas por d
 El modo antiguo de consola `hibrido` sigue siendo textual + semántico;
 el método nuevo se llama `hibrido_colaborativo`.
 
-## Plugin Moodle v0.3.0 — conexión mediante exec()
+## Plugin Moodle v0.4.0 — conexión mediante exec()
 
-El bloque utiliza el motor Python de este proyecto para buscar videos reales de YouTube
-y ordenarlos mediante comparación textual o semántica. No necesita el servidor web
-del prototipo. La conexión del híbrido colaborativo a Moodle permanece pendiente;
-el motor y el buscador local sí lo incorporan.
+El bloque utiliza el motor Python de este proyecto para buscar videos reales de YouTube.
+El botón Recomendar ejecuta análisis semántico, filtro y ranking híbrido colaborativo.
+Las valoraciones se guardan por usuario y curso en Moodle; la cuenta procede de la
+sesión, sin escribir identificadores manualmente. Sin historial suficiente, el
+resultado utiliza contenido semántico. No necesita abrir el servidor web local.
+
+Para generar el ZIP instalable desde Antigravity:
+
+```bash
+python3 scripts/package_plugin.py
+```
+
+El resultado es `block_videorec.zip`. Se actualiza también el código Python del
+servidor: el ZIP del plugin no incorpora modelos ni dependencias Python.
 
 - Instalable: **block_videorec.zip**, con carpeta raíz videorec/.
 - [Instalación, configuración y comprobaciones](docs/06_PLUGIN_MOODLE.md).
@@ -34,8 +55,8 @@ el motor y el buscador local sí lo incorporan.
 
 Los modelos y las dependencias se instalan en el servidor Python, fuera del ZIP.
 La instalación completa en Moodle y la validación de recomendaciones con docentes
-siguen pendientes. Las 80 pruebas de código incluyen mocks y una prueba real PHP/Python
-con catálogo de prueba, sin consultar YouTube en esta revisión.
+siguen pendientes. Las pruebas de código incluyen mocks y ejecución real PHP/Python
+con catálogo y embeddings de prueba, sin consultar YouTube en esta revisión.
 
 ---
 

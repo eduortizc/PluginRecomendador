@@ -16,10 +16,6 @@ class search_form extends \moodleform {
             ['size' => 60, 'maxlength' => 500]);
         $form->setType('tema', PARAM_TEXT);
         $form->addRule('tema', null, 'required', null, 'client');
-        $form->addElement('select', 'metodo', get_string('method_label', 'block_videorec'), [
-            'semantico' => get_string('method_semantico', 'block_videorec'),
-            'textual' => get_string('method_textual', 'block_videorec'),
-        ]);
         $this->add_action_buttons(false, get_string('btn_search', 'block_videorec'));
     }
 
@@ -27,9 +23,6 @@ class search_form extends \moodleform {
         $errors = parent::validation($data, $files);
         if (trim($data['tema'] ?? '') === '' || \core_text::strlen($data['tema'] ?? '') > 500) {
             $errors['tema'] = get_string('error_invalid_input', 'block_videorec');
-        }
-        if (!in_array($data['metodo'] ?? '', ['textual', 'semantico'], true)) {
-            $errors['metodo'] = get_string('error_invalid_input', 'block_videorec');
         }
         return $errors;
     }

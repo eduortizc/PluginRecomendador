@@ -79,10 +79,14 @@ modo antiguo. El nuevo método se llama `hibrido_colaborativo`.
 
 ## Alcance y validación
 
-El motor y el buscador local incorporan E5. El plugin Moodle v0.3.0 conserva sus
-modos textual y semántico; no captura valoraciones para E5. Incorporar este método
-al plugin requiere conectar las identidades y valoraciones del curso a la matriz.
-No se accedió al Moodle del usuario.
+El motor y el buscador local incorporan E5. Desde el plugin Moodle v0.4.0, el
+formulario ejecuta directamente el híbrido colaborativo con la identidad de la
+sesión y las valoraciones del curso. La base de datos Moodle conserva una sola
+valoración por usuario, video y curso: al volver a valorar se actualiza la anterior.
+Se incluyen únicamente participantes con matrícula activa, sin suspensión ni baja.
+La matriz se entrega a Python mediante un archivo temporal, eliminado al terminar;
+no se mezcla con los archivos de interacciones del prototipo. No se envían nombres,
+correos ni valoraciones a YouTube. No se accedió al Moodle del usuario.
 
 Las pruebas de E5 usan valoraciones ficticias y embeddings controlados. Comprueban
 reordenamiento antes del límite, filtro previo, ausencia de historial, cero frente

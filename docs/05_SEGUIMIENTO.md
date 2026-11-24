@@ -1,6 +1,36 @@
 # Seguimiento de Recomendador_ext
 
-Actualizado el 24 de noviembre de 2026 — E5 en motor y buscador local.
+Actualizado el 24 de noviembre de 2026 — E5 conectado al plugin Moodle v0.4.0.
+
+## Actualización vigente — plugin híbrido v0.4.0
+
+- Autorización: el usuario solicitó conectar el nuevo motor a Moodle, con flujo
+  semántico seguido de híbrido y un ZIP que pueda generar desde Antigravity.
+- El formulario ofrece únicamente tema y Recomendar. El puente usa automáticamente
+  `hibrido_colaborativo`; no requiere ejecutar el servidor web del prototipo.
+- Identidad tomada de la sesión Moodle y valoraciones explícitas de 1 a 5 en
+  `block_videorec_rating`, aisladas por curso, con actualización de la última valoración.
+- Matriz de participantes con matrícula activa, sin suspensión ni baja. Datos
+  temporales para PHP/Python, borrados al terminar incluso ante error; no se mezclan
+  con el historial local ni se envían usuarios o valoraciones a YouTube.
+- Guardado por POST con sesskey, acceso al curso, exclusión de invitados y comprobación
+  del último conjunto recomendado. Se conservaron exec(), errores traducidos y timeout.
+- Migración para v0.3.0 e instalación nueva, proveedor de exportación/borrado de datos
+  y limpieza al eliminar el curso. Versión Moodle 2026112400, release v0.4.0.
+- `requirements.txt` identifica la dependencia existente; la guía explica usar el
+  mismo intérprete `.venv/bin/python` que configura Moodle y preparar su modelo.
+- Comprobado: 99 pruebas Python/PHP satisfactorias con PHP CLI 8.4.27 y datos de prueba;
+  arnés PHP/Python del híbrido y arnés del endpoint de valoración (ocho escenarios).
+  Los embeddings y los servicios externos son controlados, no búsquedas reales.
+- 17 archivos PHP de la fuente sin errores de sintaxis; install.xml analizado.
+  ZIP y copia `videorec/` verificados: 20 archivos con raíz videorec/.
+- Incluidas tres pruebas PHPUnit para ejecutarse dentro de Moodle. No se ejecutaron
+  en esta revisión: requieren una instalación Moodle de pruebas con su base de datos.
+- Pendiente: validar instalación/actualización de la tabla y una búsqueda real en
+  el Moodle del usuario. No se accedió a su instalación ni se midió eficacia pedagógica.
+- El enriquecimiento de metadatos permanece como paso futuro.
+
+La siguiente sección conserva el estado anterior de E5 fuera de Moodle.
 
 ## Estado actual — 24 de noviembre
 

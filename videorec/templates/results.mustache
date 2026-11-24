@@ -18,6 +18,22 @@
                 <p class="text-muted">{{channel}}</p>
                 <p>{{description}}</p>
                 <p><strong>{{scorelabel}}: {{score}} / 1</strong></p>
+                <p>{{strategy}}</p>
+                {{#canrate}}
+                <form action="{{ratingurl}}" method="post" class="mb-3">
+                    <input type="hidden" name="id" value="{{courseid}}">
+                    <input type="hidden" name="sesskey" value="{{sesskey}}">
+                    <input type="hidden" name="videoid" value="{{videoid}}">
+                    <label for="videorec-rating-{{videoid}}">{{#str}}rate_video, block_videorec{{/str}}</label>
+                    <select id="videorec-rating-{{videoid}}" name="rating" required class="custom-select">
+                        <option value="">{{#str}}choose_rating, block_videorec{{/str}}</option>
+                        {{#ratingoptions}}
+                        <option value="{{value}}" {{#selected}}selected{{/selected}}>{{value}} / 5</option>
+                        {{/ratingoptions}}
+                    </select>
+                    <button type="submit" class="btn btn-secondary">{{#str}}save_rating, block_videorec{{/str}}</button>
+                </form>
+                {{/canrate}}
                 <dl>
                     <dt>{{#str}}stats_views, block_videorec{{/str}}</dt><dd>{{views}}</dd>
                     <dt>{{#str}}stats_likes, block_videorec{{/str}}</dt><dd>{{likes}}</dd>
