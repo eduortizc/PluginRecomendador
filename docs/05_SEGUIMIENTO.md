@@ -1,8 +1,35 @@
 # Seguimiento de Recomendador_ext
 
-Actualizado el 17 de noviembre de 2026 — Integración Moodle por exec(), v0.3.0.
+Actualizado el 24 de noviembre de 2026 — E5 en motor y buscador local.
 
-## Estado confirmado en esta revisión
+## Estado actual — 24 de noviembre
+
+- Autorización: implementar el flujo en código; enriquecimiento de metadatos
+  pospuesto por indicación expresa del usuario, sin modificar la tesis.
+- Añadido `recomendador/colaborativo.py`: vecinos de usuario con coseno sobre
+  dos o más valoraciones comunes, hasta diez vecinos por candidato y respaldo
+  semántico por falta de evidencia. Solo consume valoraciones explícitas.
+- Añadido `hibrido_colaborativo`: análisis de título y descripción, filtro
+  semántico y combinación 70% contenido / 30% colaborativo antes del límite.
+  Umbral y ponderación iniciales, sin validación experimental.
+- Conectado al buscador web y consola. Historial local persistente, sin usuarios
+  ficticios predeterminados y con archivos separados para YouTube y pruebas.
+- Conservado el modo histórico `hibrido` textual-semántico por compatibilidad.
+- El plugin Moodle v0.3.0 conserva su fuente y sus modos textual/semántico.
+  No se accedió al Moodle real. La conexión de E5 al plugin queda pendiente.
+- Guía del incremento: `docs/07_MOTOR_HIBRIDO.md`.
+
+Las secciones del 17 de noviembre y anteriores se conservan como registro histórico.
+
+### Comprobaciones de E5 ejecutadas
+
+`python3 -m unittest discover tests -q`: 93 pruebas contabilizadas, 92
+satisfactorias y una omitida porque PHP CLI no está disponible. Incluye 13 casos
+nuevos de E5, con integración de consola y recorrido HTTP local. Se utilizaron
+embeddings controlados y valoraciones ficticias. No se descargó un modelo, no
+se consultó YouTube real y no se midió eficacia pedagógica en esta revisión.
+
+## Estado confirmado el 17 de noviembre (histórico)
 
 | Elemento | Estado | Evidencia |
 | --- | --- | --- |

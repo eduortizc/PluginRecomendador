@@ -207,7 +207,7 @@ class GestorInteracciones:
 
     # ── Matriz de utilidad para Filtrado Colaborativo (E5) ────────────────────
 
-    def generar_matriz_utilidad(self) -> dict[str, dict[str, float]]:
+    def generar_matriz_utilidad(self, solo_valoraciones: bool = False) -> dict[str, dict[str, float]]:
         """Genera una matriz usuario × video con puntuaciones consolidadas en escala 1.0 - 5.0.
 
         Reglas de consolidación:
@@ -218,12 +218,17 @@ class GestorInteracciones:
 
         Devuelve
         --------
+        Con solo_valoraciones=True se excluyen las señales implícitas. Es la
+        matriz que utiliza E5; una impresión no significa agrado o desagrado.
+
         dict[str, dict[str, float]]
             Estructura {usuario_id: {video_id: score_1_a_5}}
         """
         # Agrupar eventos por (usuario_id, video_id)
         agrupados: dict[tuple[str, str], list[dict[str, Any]]] = {}
         for ev in self.eventos:
+            if solo_valoraciones and ev["tipo"] != TIPO_VALORACION:
+                continue
             clave = (ev["usuario_id"], ev["video_id"])
             agrupados.setdefault(clave, []).append(ev)
 
@@ -252,4 +257,5 @@ class GestorInteracciones:
             matriz[usr][vid] = round(float(score), 2)
 
         return matriz
+
 

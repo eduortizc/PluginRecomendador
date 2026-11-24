@@ -1,6 +1,16 @@
 # Instrucciones para Recomendador_ext
 
-## Alcance vigente — 17 de noviembre de 2026
+## Alcance vigente — 24 de noviembre de 2026
+
+El usuario solicitó implementar el flujo en código. E5 está incorporado al motor
+y al buscador local mediante `hibrido_colaborativo`: umbral semántico, vecinos
+de usuario con valoraciones explícitas y combinación, con respaldo por contenido.
+El enriquecimiento de metadatos queda para una etapa futura. Consultar
+docs/07_MOTOR_HIBRIDO.md y docs/05_SEGUIMIENTO.md. El plugin Moodle mantiene v0.3.0
+y todavía no ofrece E5. No usar datos simulados como historial real ni confundir
+el modo histórico `hibrido` textual-semántico con el nuevo método colaborativo.
+
+## Integración previa — 17 de noviembre de 2026
 
 El usuario autorizó integrar el motor existente como plugin Moodle mediante exec()
 de PHP a Python local. La guía actual está en docs/06_PLUGIN_MOODLE.md y el estado

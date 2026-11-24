@@ -12,7 +12,7 @@ Trabajar fuera de Moodle no implica que todo el proyecto deba funcionar sin inte
 | --- | --- | --- |
 | E1 | Catálogo local, consulta por tema y ranking textual sencillo. | Ejecución reproducible y casos básicos comprobados con datos simulados. |
 | E2 | Recuperación de candidatos reales con YouTube Data API. | Metadatos reales y gestión de errores, cuotas y resultados vacíos. |
-| E3 | Análisis semántico y enriquecimiento de metadatos. | Modelo identificado y procedencia del texto registrada. |
+| E3 | Análisis semántico de título y descripción. Enriquecimiento pospuesto por indicación del usuario el 24/11/2026. | Modelo identificado y procedencia del texto registrada. |
 | E4 | Contexto, valoraciones e interacciones dentro del prototipo independiente. | Señales de usuario diferenciadas y datos apropiados para experimentación. |
 | E5 | Filtrado colaborativo y modelo híbrido. | Comparación reproducible con el ranking de contenido y manejo de falta de historial. |
 | E6 | Adaptador y plugin Moodle. | Contexto y recomendaciones integrados en un entorno de pruebas, con permisos adecuados. |
@@ -73,3 +73,4 @@ No reportar métricas de eficacia para E1. Las pruebas del programa solo demostr
 ## Decisiones abiertas
 
 Dominio piloto, conjunto real de videos, método de embeddings, algoritmo colaborativo, participantes, canal para recopilar valoraciones y forma final de integración. No añadir de antemano un servicio web, una base vectorial o entrenamiento de modelos sin una necesidad comprobada.
+

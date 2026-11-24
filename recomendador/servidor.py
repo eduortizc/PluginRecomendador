@@ -3,8 +3,8 @@ servidor.py – Servidor web interactivo local para explorar recomendaciones.
 
 Utiliza la biblioteca estándar de Python (http.server) para ofrecer una interfaz
 web visual sin depender de servidores o frameworks externos.
-Soporta los modos de ranking: textual, semántico e híbrido (E3),
-así como perfiles de usuario, registro de valoraciones e interacciones (E4).
+Soporta ranking textual, semántico y semántico-colaborativo (E5),
+con registro de valoraciones e interacciones (E4).
 """
 
 import json
@@ -20,7 +20,17 @@ from .interacciones import GestorInteracciones, ErrorInteraccion
 
 # Instancias compartidas en memoria para reutilizar entre peticiones
 _modelo_embeddings = None
-_gestor_interacciones = GestorInteracciones()
+_gestores_interacciones = {}
+
+
+def _obtener_gestor(fuente="youtube"):
+    """Separa los eventos reales de las pruebas con catálogo simulado."""
+    clave = "youtube" if fuente == "youtube" else "simulado"
+    if clave not in _gestores_interacciones:
+        nombre = "interacciones.json" if clave == "youtube" else "interacciones_pruebas.json"
+        ruta = Path(__file__).resolve().parent.parent / "data" / nombre
+        _gestores_interacciones[clave] = GestorInteracciones(ruta)
+    return _gestores_interacciones[clave]
 
 
 def _obtener_modelo():
@@ -460,7 +470,7 @@ def _obtener_interfaz_web_html() -> str:
     <div class="container">
         <header>
             <h1>Recomendador de Videos Educativos</h1>
-            <p class="subtitle">Explora candidatos de YouTube o catálogo simulado con similitud textual, semántica e interacciones (E1-E4)</p>
+            <p class="subtitle">Recomendaciones por contenido semántico y valoraciones de usuarios similares</p>
         </header>
 
         <section class="search-panel">
@@ -481,17 +491,12 @@ def _obtener_interfaz_web_html() -> str:
                         </div>
                         <span style="margin-left:0.5rem;">Método:</span>
                         <div class="source-selector">
-                            <button type="button" id="btnTextual" class="source-btn active" onclick="cambiarMetodo('textual')">Textual</button>
+                            <button type="button" id="btnTextual" class="source-btn" onclick="cambiarMetodo('textual')">Textual</button>
                             <button type="button" id="btnSemantico" class="source-btn" onclick="cambiarMetodo('semantico')">Semántico ✨</button>
-                            <button type="button" id="btnHibrido" class="source-btn" onclick="cambiarMetodo('hibrido')">Híbrido</button>
+                            <button type="button" id="btnHibrido" class="source-btn active" onclick="cambiarMetodo('hibrido_colaborativo')">Híbrido (contenido + colaborativo)</button>
                         </div>
                         <span style="margin-left:0.5rem;">👤 Usuario:</span>
-                        <select id="selectUsuario" class="select-user">
-                            <option value="usr_estudiante_01">Estudiante Principiante (usr_estudiante_01)</option>
-                            <option value="usr_estudiante_02">Estudiante Avanzado (usr_estudiante_02)</option>
-                            <option value="usr_estudiante_03">Estudiante Redes (usr_estudiante_03)</option>
-                            <option value="usr_docente_01">Docente Titular BD (usr_docente_01)</option>
-                        </select>
+                        <input id="selectUsuario" class="select-user" placeholder="Tu identificador local (opcional)" maxlength="100" aria-label="Identificador de usuario local">
                     </div>
 
                     <div class="presets">
@@ -528,7 +533,7 @@ def _obtener_interfaz_web_html() -> str:
 
     <script>
         let fuenteActual = 'youtube';
-        let metodoActual = 'textual';
+        let metodoActual = 'hibrido_colaborativo';
 
         function cambiarFuente(fuente) {
             fuenteActual = fuente;
@@ -540,7 +545,7 @@ def _obtener_interfaz_web_html() -> str:
             metodoActual = metodo;
             document.getElementById('btnTextual').classList.toggle('active', metodo === 'textual');
             document.getElementById('btnSemantico').classList.toggle('active', metodo === 'semantico');
-            document.getElementById('btnHibrido').classList.toggle('active', metodo === 'hibrido');
+            document.getElementById('btnHibrido').classList.toggle('active', metodo === 'hibrido_colaborativo');
         }
 
         function usarSugerencia(tema) {
@@ -549,28 +554,38 @@ def _obtener_interfaz_web_html() -> str:
         }
 
         function obtenerUsuarioActivo() {
-            return document.getElementById('selectUsuario').value || 'usr_estudiante_01';
+            return document.getElementById('selectUsuario').value.trim();
         }
 
         async function registrarInteraccion(videoId, tipo, valor = null) {
             const usuarioId = obtenerUsuarioActivo();
+            if (!usuarioId) throw new Error('Escribe tu identificador local para guardar una valoración.');
             const tema = document.getElementById('inputTema').value.trim();
             try {
                 const params = new URLSearchParams({
                     usuario_id: usuarioId,
                     video_id: videoId,
                     tipo: tipo,
-                    tema: tema
+                    tema: tema,
+                    fuente: fuenteActual
                 });
                 if (valor !== null) params.append('valor', valor);
-                await fetch(`/api/interaccion?${params.toString()}`);
+                const resp = await fetch(`/api/interaccion?${params.toString()}`);
+                const data = await resp.json();
+                if (!resp.ok) throw new Error(data.error || 'No se pudo guardar la interacción.');
             } catch (err) {
                 console.error("Error al registrar interacción:", err);
+                throw err;
             }
         }
 
         async function valorarVideo(videoId, estrellas) {
-            await registrarInteraccion(videoId, 'valoracion', estrellas);
+            try {
+                await registrarInteraccion(videoId, 'valoracion', estrellas);
+            } catch (err) {
+                alert(err.message);
+                return;
+            }
             const feedbackEl = document.getElementById(`feedback-${videoId}`);
             if (feedbackEl) {
                 feedbackEl.textContent = `★ ${estrellas}.0 registrada`;
@@ -658,10 +673,11 @@ def _obtener_interfaz_web_html() -> str:
                     <div class="card-body">
                         <div class="badges-row">
                             <span class="source-tag ${r.origen || data.datos}">${(r.origen || data.datos).toUpperCase()}</span>
-                            <span class="score-tag">${porcentaje}% coincidencia</span>
+                            <span class="score-tag">${porcentaje}/100 puntuación</span>
                         </div>
                         <h3 class="card-title">${r.titulo}</h3>
                         <p class="card-channel">📺 ${r.canal || 'Sin canal especificado'}</p>
+                        ${r.estrategia ? `<p class="card-channel">${r.estrategia === 'respaldo_semantico' ? 'Solo contenido: falta historial colaborativo suficiente.' : `Contenido + valoraciones de ${r.vecinos_utilizados} usuarios similares.`}</p>` : ''}
                         <div class="card-matches">
                             <span style="color: var(--text-muted); margin-right: 0.2rem;">Coincidencias:</span>
                             ${chips}
@@ -687,7 +703,7 @@ def _obtener_interfaz_web_html() -> str:
 
         function abrirModal(url, titulo, videoId) {
             if (videoId) {
-                registrarInteraccion(videoId, 'apertura');
+                if (obtenerUsuarioActivo()) registrarInteraccion(videoId, 'apertura').catch(console.error);
             }
             const modal = document.getElementById('modalPlayer');
             const frame = document.getElementById('modalFrame');
@@ -721,6 +737,10 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
 
     def do_GET(self):
         url_parsed = urllib.parse.urlparse(self.path)
+        params = urllib.parse.parse_qs(url_parsed.query)
+        gestor = None
+        if url_parsed.path.startswith("/api/"):
+            gestor = _obtener_gestor(params.get("fuente", ["youtube"])[0])
 
         if url_parsed.path == "/":
             self.send_response(200)
@@ -730,7 +750,7 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
             return
 
         if url_parsed.path == "/api/usuarios":
-            usuarios = _gestor_interacciones.obtener_usuarios()
+            usuarios = gestor.obtener_usuarios()
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
@@ -738,7 +758,7 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
             return
 
         if url_parsed.path == "/api/matriz":
-            matriz = _gestor_interacciones.generar_matriz_utilidad()
+            matriz = gestor.generar_matriz_utilidad(solo_valoraciones=True)
             self.send_response(200)
             self.send_header("Content-Type", "application/json; charset=utf-8")
             self.end_headers()
@@ -754,14 +774,14 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
             tema = params.get("tema", [""])[0].strip()
 
             try:
-                evento = _gestor_interacciones.registrar_evento(
+                evento = gestor.registrar_evento(
                     usuario_id=usuario_id,
                     video_id=video_id,
                     tipo=tipo,
                     valor=valor,
                     contexto={"tema": tema} if tema else None,
                 )
-                _gestor_interacciones.guardar()
+                gestor.guardar()
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json; charset=utf-8")
                 self.end_headers()
@@ -779,7 +799,7 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
             fuente = params.get("fuente", ["youtube"])[0].strip()
             metodo = params.get("metodo", ["textual"])[0].strip()
             usuario_id = params.get("usuario_id", [""])[0].strip()
-            if metodo not in ("textual", "semantico", "hibrido"):
+            if metodo not in ("textual", "semantico", "hibrido", "hibrido_colaborativo"):
                 metodo = "textual"
             limite = int(params.get("limite", ["5"])[0])
             limite = max(1, min(limite, 5))
@@ -811,7 +831,7 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
                     return
 
             modelo = None
-            if metodo in ("semantico", "hibrido"):
+            if metodo in ("semantico", "hibrido", "hibrido_colaborativo"):
                 try:
                     modelo = _obtener_modelo()
                 except ImportError as exc:
@@ -822,19 +842,30 @@ class _ManejadorRecomendador(BaseHTTPRequestHandler):
                     return
 
             contexto = {"usuario_id": usuario_id} if usuario_id else None
-            resultado = recomendar(tema, candidatos, limite, metodo=metodo, modelo_embeddings=modelo, contexto=contexto)
+            try:
+                resultado = recomendar(
+                    tema, candidatos, limite, metodo=metodo,
+                    modelo_embeddings=modelo, contexto=contexto,
+                    matriz_utilidad=gestor.generar_matriz_utilidad(solo_valoraciones=True),
+                )
+            except ImportError as exc:
+                self.send_response(503)
+                self.send_header("Content-Type", "application/json; charset=utf-8")
+                self.end_headers()
+                self.wfile.write(json.dumps({"error": str(exc)}).encode("utf-8"))
+                return
 
             # Si hay usuario identificado, registrar evento de impresion para cada resultado
             if usuario_id:
                 try:
                     for r in resultado.get("resultados", []):
-                        _gestor_interacciones.registrar_evento(
+                        gestor.registrar_evento(
                             usuario_id=usuario_id,
                             video_id=r["id"],
                             tipo="impresion",
                             contexto={"tema": tema},
                         )
-                    _gestor_interacciones.guardar()
+                    gestor.guardar()
                 except Exception:
                     pass
 
@@ -854,7 +885,7 @@ def iniciar_servidor_web(puerto: int = 8080) -> None:
     servidor = HTTPServer(direccion, _ManejadorRecomendador)
     url = f"http://127.0.0.1:{puerto}"
     print(f"\n=======================================================")
-    print(f"  🎓 Explorador Visual del Recomendador de Videos (E1-E4)")
+    print(f"  🎓 Explorador Visual del Recomendador de Videos (E1-E5)")
     print(f"  Servidor activo en: {url}")
     print(f"  Presiona Ctrl+C en la terminal para detenerlo")
     print(f"=======================================================\n")
@@ -864,3 +895,4 @@ def iniciar_servidor_web(puerto: int = 8080) -> None:
     except KeyboardInterrupt:
         print("\nServidor detenido.")
         servidor.server_close()
+

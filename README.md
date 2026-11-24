@@ -1,10 +1,30 @@
 # Recomendador educativo y plugin Moodle
 
+## Motor híbrido del prototipo — E5
+
+Implementado en el motor Python y el buscador local: análisis semántico → filtro
+por umbral → filtrado colaborativo por vecinos → combinación y ranking final.
+El enriquecimiento de metadatos queda pendiente.
+
+```bash
+python3 -m recomendador --web
+```
+
+El buscador inicia en YouTube real con Híbrido (contenido + colaborativo).
+Escribe tu identificador local para guardar valoraciones. Sin historial suficiente
+se conserva la puntuación semántica. No se cargan valoraciones simuladas por defecto.
+
+[Funcionamiento, consola y límites de E5](docs/07_MOTOR_HIBRIDO.md).
+
+El modo antiguo de consola `hibrido` sigue siendo textual + semántico;
+el método nuevo se llama `hibrido_colaborativo`.
+
 ## Plugin Moodle v0.3.0 — conexión mediante exec()
 
 El bloque utiliza el motor Python de este proyecto para buscar videos reales de YouTube
 y ordenarlos mediante comparación textual o semántica. No necesita el servidor web
-del prototipo. El híbrido colaborativo permanece pendiente.
+del prototipo. La conexión del híbrido colaborativo a Moodle permanece pendiente;
+el motor y el buscador local sí lo incorporan.
 
 - Instalable: **block_videorec.zip**, con carpeta raíz videorec/.
 - [Instalación, configuración y comprobaciones](docs/06_PLUGIN_MOODLE.md).

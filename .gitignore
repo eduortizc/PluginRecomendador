@@ -12,3 +12,6 @@ modelos/
 *.safetensors
 *.onnx
 pytorch_model.bin
+data/interacciones.json
+data/interacciones_pruebas.json
+

@@ -14,6 +14,7 @@ Uso:
 import argparse
 import json
 import sys
+from pathlib import Path
 
 from .catalogo import cargar_catalogo, ErrorCatalogo
 from .ranking import recomendar
@@ -24,7 +25,7 @@ from .interacciones import GestorInteracciones, ErrorInteraccion
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Recomendador de videos educativos – E1/E2/E3/E4.",
+        description="Recomendador de videos educativos – E1 a E5.",
     )
     parser.add_argument(
         "--tema",
@@ -45,13 +46,14 @@ def main() -> None:
     )
     parser.add_argument(
         "--metodo",
-        choices=["textual", "semantico", "hibrido"],
+        choices=["textual", "semantico", "hibrido", "hibrido_colaborativo"],
         default="textual",
         help=(
             "Método de ranking: "
             "'textual' (coincidencia de palabras, E1), "
             "'semantico' (embeddings sentence-transformers, E3), "
-            "'hibrido' (combinación ponderada, E3). "
+            "'hibrido' (textual + semántico, legado E3), "
+            "'hibrido_colaborativo' (semántico + vecinos de usuario, E5). "
             "Por defecto: textual."
         ),
     )
@@ -96,7 +98,7 @@ def main() -> None:
     parser.add_argument(
         "--listar-usuarios",
         action="store_true",
-        help="Lista los perfiles de usuario simulados disponibles (E4).",
+        help="Lista los perfiles disponibles en el archivo de interacciones indicado (E4).",
     )
     parser.add_argument(
         "--html",
@@ -116,7 +118,16 @@ def main() -> None:
         help="Inicia una aplicación web visual interactiva local (por defecto puerto 8080).",
     )
 
+    parser.add_argument("--peso-semantico", type=float, default=0.7,
+                        help="Peso semántico del híbrido colaborativo (0-1, defecto 0.7).")
+    parser.add_argument("--umbral-semantico", type=float, default=0.15,
+                        help="Umbral del filtro previo al híbrido colaborativo (0-1).")
+    parser.add_argument("--interacciones", type=Path,
+                        help="Archivo de valoraciones locales; por defecto separa YouTube de las pruebas simuladas.")
     args = parser.parse_args()
+    if args.interacciones is None:
+        nombre = "interacciones.json" if args.fuente == "youtube" else "interacciones_pruebas.json"
+        args.interacciones = Path(__file__).resolve().parent.parent / "data" / nombre
 
     # ── Modo Servidor Web Interactivo ─────────────────────────────────
     if args.web is not None:
@@ -126,17 +137,17 @@ def main() -> None:
 
     # ── Listar usuarios (E4) ─────────────────────────────────────────
     if args.listar_usuarios:
-        gestor = GestorInteracciones()
+        gestor = GestorInteracciones(args.interacciones)
         print(json.dumps({"usuarios": gestor.obtener_usuarios()}, ensure_ascii=False, indent=2))
         return
 
     # ── Ver Matriz de Utilidad (E4) ──────────────────────────────────
     if args.ver_matriz:
-        gestor = GestorInteracciones()
-        matriz = gestor.generar_matriz_utilidad()
+        gestor = GestorInteracciones(args.interacciones)
+        matriz = gestor.generar_matriz_utilidad(solo_valoraciones=True)
         print(json.dumps({
             "metodo": "matriz_utilidad_interacciones",
-            "descripcion": "Puntuaciones consolidadas (explícitas 1-5 e implícitas inferidas)",
+            "descripcion": "Valoraciones explícitas 1-5 utilizadas por E5",
             "usuarios": len(matriz),
             "matriz": matriz,
         }, ensure_ascii=False, indent=2))
@@ -155,6 +166,9 @@ def main() -> None:
     if not 0.0 <= args.alpha <= 1.0:
         print("Error: --alpha debe ser un número entre 0.0 y 1.0.", file=sys.stderr)
         sys.exit(1)
+
+    if not 0 <= args.peso_semantico <= 1 or not 0 <= args.umbral_semantico <= 1:
+        parser.error("--peso-semantico y --umbral-semantico deben estar entre 0 y 1.")
 
     # ── Obtener candidatos según la fuente ───────────────────────────
     if args.fuente == "youtube":
@@ -183,12 +197,16 @@ def main() -> None:
         contexto["disciplina"] = args.disciplina
 
     # ── Ejecutar recomendación ──────────────────────────────────────
-    if args.metodo in ("semantico", "hibrido"):
+    if args.metodo in ("semantico", "hibrido", "hibrido_colaborativo"):
         print(
             f"⏳ Cargando modelo de embeddings para método '{args.metodo}'...",
             file=sys.stderr,
         )
 
+    try:
+        gestor = GestorInteracciones(args.interacciones)
+    except ErrorInteraccion as exc:
+        parser.error(str(exc))
     resultado = recomendar(
         args.tema,
         candidatos,
@@ -196,11 +214,13 @@ def main() -> None:
         metodo=args.metodo,
         alpha=args.alpha,
         contexto=contexto or None,
+        matriz_utilidad=gestor.generar_matriz_utilidad(solo_valoraciones=True),
+        peso_semantico=args.peso_semantico,
+        umbral_semantico=args.umbral_semantico,
     )
 
     # Si hay un usuario indicado, registrar evento de 'impresion' de los recomendados
     if args.usuario:
-        gestor = GestorInteracciones()
         for r in resultado.get("resultados", []):
             gestor.registrar_evento(
                 usuario_id=args.usuario,
@@ -208,6 +228,7 @@ def main() -> None:
                 tipo="impresion",
                 contexto=contexto or None,
             )
+        gestor.guardar()
 
     # ── Exportar a vista HTML si se solicitó ────────────────────────
     if args.html:
@@ -219,3 +240,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
